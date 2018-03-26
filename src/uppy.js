@@ -22,7 +22,14 @@ const defaultOptions = {
     protocol: 'http',
     path: ''
   },
-  providerOptions: {},
+  providerOptions: {
+    s3: {
+      acl: 'public-read',
+      endpoint: 'https://{service}.{region}.amazonaws.com',
+      conditions: [],
+      getKey: (req, filename) => filename
+    }
+  },
   debug: true
 }
 
@@ -185,6 +192,19 @@ const getDebugLogger = (options) => {
  * @param {object} options
  */
 const getOptionsMiddleware = (options) => {
+  let s3Client = null
+  if (options.providerOptions.s3) {
+    const S3 = require('aws-sdk/clients/s3')
+    const config = options.providerOptions.s3
+    s3Client = new S3({
+      region: config.region,
+      endpoint: config.endpoint,
+      accessKeyId: config.key,
+      secretAccessKey: config.secret,
+      signatureVersion: 'v4'
+    })
+  }
+
   /**
    *
    * @param {object} req
@@ -194,6 +214,7 @@ const getOptionsMiddleware = (options) => {
   const middleware = (req, res, next) => {
     req.uppy = {
       options,
+      s3Client,
       authToken: req.cookies.uppyAuthToken,
       debugLog: getDebugLogger(options),
       buildURL: getURLBuilder(options)
