@@ -45,6 +45,7 @@ class Instagram {
         if (err) return console.error(err)
         request(this._getMediaUrl(body, query.carousel_id))
           .on('data', onData)
+          .on('end', () => onData(null))
           .on('error', (err) => {
             console.error(err)
           })

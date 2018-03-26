@@ -56,16 +56,20 @@ class Uploader {
    * @param {Buffer | Buffer[]} chunk
    */
   handleChunk (chunk) {
+    // Completed.
+    if (chunk === null) {
+      if (this.options.endpoint && this.options.protocol !== 'tus') {
+        this.uploadMultipart()
+      }
+      return this.writer.end()
+    }
+
     this.writer.write(chunk, () => {
       console.log(`Downloaded ${this.writer.bytesWritten} bytes`)
       if (!this.options.endpoint) return
 
       if (this.options.protocol === 'tus' && !this.tus) {
         return this.uploadTus()
-      }
-
-      if (this.options.protocol !== 'tus' && this.writer.bytesWritten === this.options.size) {
-        return this.uploadMultipart()
       }
     })
   }

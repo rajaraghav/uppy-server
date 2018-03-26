@@ -48,6 +48,7 @@ class DropBox {
       .auth(token)
       .request()
       .on('data', onData)
+      .on('end', () => onData(null))
       .on('error', (err) => {
         console.error(err)
       })
